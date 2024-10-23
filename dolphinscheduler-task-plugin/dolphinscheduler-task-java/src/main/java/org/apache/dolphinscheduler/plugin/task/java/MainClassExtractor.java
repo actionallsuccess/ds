@@ -18,17 +18,28 @@
 package org.apache.dolphinscheduler.plugin.task.java;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MainClassExtractor {
 
-    public static String getMainClassName(String jarFilePath) throws IOException {
-        JarFile jarFile = new JarFile(new File(jarFilePath));
-        Manifest manifest = jarFile.getManifest();
-        String mainClassName = manifest.getMainAttributes().getValue("Main-Class");
-        jarFile.close();
+    private static final Logger logger = LoggerFactory.getLogger(MainClassExtractor.class);
+
+    private MainClassExtractor() {
+    }
+    public static String getMainClassName(String jarFilePath) {
+        String mainClassName = null;
+        try (JarFile jarFile = new JarFile(new File(jarFilePath))) {
+
+            Manifest manifest = jarFile.getManifest();
+            mainClassName = manifest.getMainAttributes().getValue("Main-Class");
+
+        } catch (Exception e) {
+            logger.error("get mainJarName failed:", e);
+        }
         return mainClassName;
     }
 }

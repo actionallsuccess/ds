@@ -41,7 +41,7 @@ public class JavaTaskTest {
      * @return void
      **/
     @Test
-    public void buildJarCommand() {
+    void buildJarCommand() {
         JavaTask javaTask = runJarType();
         assertThat(javaTask.buildJarCommand())
                 .isEqualTo(
@@ -54,25 +54,20 @@ public class JavaTaskTest {
      * @return void
      */
     @Test
-    public void buildNormalJarCommand() {
+    void buildNormalJarCommand() {
         JavaTask javaTask = runNormalJarType();
-        try {
-            assertThat(javaTask.buildNormalJarCommand())
-                    .isEqualTo(
-                            "${JAVA_HOME}/bin/java -classpath .:/tmp/dolphinscheduler/test/executepath:/tmp/dolphinscheduler/test/executepath/opt/share/jar/resource2.jar:/tmp/dolphinscheduler/test/executepath/opt/share/jar/main.jar HelloWorldWithGuava -host 127.0.0.1 -port 8080 -xms:50m");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        assertThat(javaTask.buildNormalJarCommand())
+                .isEqualTo(
+                        "${JAVA_HOME}/bin/java -classpath .:/tmp/dolphinscheduler/test/executepath:/tmp/dolphinscheduler/test/executepath/opt/share/jar/resource2.jar:/tmp/dolphinscheduler/test/executepath/opt/share/jar/main.jar HelloWorldWithGuava -host 127.0.0.1 -port 8080 -xms:50m");
     }
 
     /**
      * add the Normal Jar parameters
      *
      * @param runType
-     * @return
+     * @return JavaParameters
      */
-    public JavaParameters createNormalJarJavaParameters(String runType) {
+    private JavaParameters createNormalJarJavaParameters(String runType) {
         JavaParameters javaParameters = new JavaParameters();
         javaParameters.setRunType(runType);
         javaParameters.setModulePath(false);
@@ -103,9 +98,9 @@ public class JavaTaskTest {
      * Add the fat jar parameters
      *
      * @param runType
-     * @return
+     * @return JavaParameters
      */
-    public JavaParameters createJavaParametersObject(String runType) {
+    private JavaParameters createJavaParametersObject(String runType) {
         JavaParameters javaParameters = new JavaParameters();
         javaParameters.setRunType(runType);
         javaParameters.setModulePath(false);

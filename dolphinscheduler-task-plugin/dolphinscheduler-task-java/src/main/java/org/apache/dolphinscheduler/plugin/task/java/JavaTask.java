@@ -19,6 +19,7 @@ package org.apache.dolphinscheduler.plugin.task.java;
 
 import static org.apache.dolphinscheduler.plugin.task.java.JavaConstants.JAVA_HOME_VAR;
 
+import org.apache.dolphinscheduler.common.constants.Constants;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.plugin.task.api.AbstractTask;
 import org.apache.dolphinscheduler.plugin.task.api.ShellCommandExecutor;
@@ -143,11 +144,11 @@ public class JavaTask extends AbstractTask {
                 .getResourceAbsolutePathInLocal();
         StringBuilder builder = new StringBuilder();
         builder.append(getJavaCommandPath())
-                .append("java").append(" ")
-                .append(buildResourcePath()).append(" ")
-                .append("-jar").append(" ")
-                .append(mainJarAbsolutePathInLocal).append(" ")
-                .append(javaParameters.getMainArgs().trim()).append(" ")
+                .append("java").append(Constants.SPACE)
+                .append(buildResourcePath()).append(Constants.SPACE)
+                .append("-jar").append(Constants.SPACE)
+                .append(mainJarAbsolutePathInLocal).append(Constants.SPACE)
+                .append(javaParameters.getMainArgs().trim()).append(Constants.SPACE)
                 .append(javaParameters.getJvmArgs().trim());
         return builder.toString();
     }
@@ -163,18 +164,14 @@ public class JavaTask extends AbstractTask {
                 javaParameters.getMainJar()
                         .getResourceName())
                 .getResourceAbsolutePathInLocal();
-        String mainJarName = null;
-        try {
-            mainJarName = MainClassExtractor.getMainClassName(mainJarAbsolutePathInLocal);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String mainJarName = MainClassExtractor.getMainClassName(mainJarAbsolutePathInLocal);
+
         StringBuilder builder = new StringBuilder();
         builder.append(getJavaCommandPath())
-                .append("java").append(" ")
-                .append(buildResourcePath()).append(" ")
-                .append(mainJarName).append(" ")
-                .append(javaParameters.getMainArgs().trim()).append(" ")
+                .append("java").append(Constants.SPACE)
+                .append(buildResourcePath()).append(Constants.SPACE)
+                .append(mainJarName).append(Constants.SPACE)
+                .append(javaParameters.getMainArgs().trim()).append(Constants.SPACE)
                 .append(javaParameters.getJvmArgs().trim());
         return builder.toString();
     }
