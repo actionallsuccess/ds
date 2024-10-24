@@ -103,7 +103,7 @@ public class WorkflowJavaTaskE2ETest {
 
         ProjectPage projectPage = new ProjectPage(browser);
         Awaitility.await().untilAsserted(() -> assertThat(projectPage.projectList())
-                .as("项目列表应包含新创建的项目")
+                .as("The project list should include newly created projects.")
                 .anyMatch(it -> it.getText().contains(project)));
     }
 
@@ -152,7 +152,8 @@ public class WorkflowJavaTaskE2ETest {
         workflow1.<JavaTaskForm>addTask(WorkflowForm.TaskType.JAVA)
                 .selectRunType("FAT_JAR")
                 .selectMainPackage("fat.jar")
-                .selectResource("fat.jar")
+                .selectJavaResource("fat.jar")
+                .selectJavaResource("fat.jar")
                 .name("test-1")
                 .selectEnv(environmentName)
                 .submit()
@@ -229,8 +230,9 @@ public class WorkflowJavaTaskE2ETest {
                 .<JavaTaskForm>addTask(WorkflowForm.TaskType.JAVA)
                 .selectRunType("NORMAL_JAR")
                 .selectMainPackage("normal1.jar")
-                .selectResource("normal1.jar")
-                .selectResource("normal2.jar")
+                .selectJavaResource("normal1.jar")
+                .selectJavaResource("normal1.jar")
+                .selectJavaResource("normal2.jar")
                 .name("test-2")
                 .selectEnv(environmentName)
                 .submit()
@@ -275,19 +277,6 @@ public class WorkflowJavaTaskE2ETest {
                     assertThat(row.isSuccess()).isTrue();
                     assertThat(row.executionTime()).isEqualTo(1);
                 });
-        /*
-         * Awaitility.await() .atMost(Duration.ofMinutes(5)) .untilAsserted(() -> { browser.navigate().refresh();
-         * 
-         * final WorkflowInstanceTab workflowInstanceTab = projectPage.goToTab(WorkflowInstanceTab.class);
-         * 
-         * List<WorkflowInstanceTab.Row> instances = workflowInstanceTab.instances();
-         * 
-         * if (instances.isEmpty()) { throw new RuntimeException("No workflow instances found"); }
-         * 
-         * WorkflowInstanceTab.Row row = instances.get(0);
-         * 
-         * assertThat(row.isSuccess()).isTrue(); assertThat(row.executionTime()).isEqualTo(1); });
-         */
 
     }
 

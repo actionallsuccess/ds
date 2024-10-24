@@ -17,9 +17,9 @@
 
 package org.apache.dolphinscheduler.e2e.pages.project.workflow.task;
 
+import org.apache.dolphinscheduler.e2e.core.WebDriverWaitFactory;
 import org.apache.dolphinscheduler.e2e.pages.project.workflow.WorkflowForm;
 
-import java.time.Duration;
 import java.util.List;
 
 import lombok.Getter;
@@ -30,6 +30,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.FindBys;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -39,14 +40,26 @@ public class JavaTaskForm extends TaskNodeForm {
 
     private WebDriver driver;
 
-    @FindBy(xpath = "//label[span[text()='Run Type']]/following-sibling::div//div[contains(@class, 'n-base-selection')]")
-    private WebElement selectRunType;
+    @FindBys({
+            @FindBy(className = "resource-select"),
+            @FindBy(className = "n-base-selection"),
+    })
+    private WebElement selectResource;
 
-    @FindBy(xpath = "//label[span[text()='Main Package']]/following-sibling::div//div[contains(@class, 'n-base-selection-label')]")
+    @FindBys({
+
+            @FindBy(className = "n-tree-select"),
+            @FindBy(className = "n-base-selection"),
+    })
     private WebElement selectMainPackage;
 
-    @FindBy(xpath = "//div[@class='n-form-item-blank']//div[contains(@class, 'n-base-selection--multiple')]//div[contains(@class, 'n-base-selection-tags') and @tabindex='0']")
-    private WebElement selectResource;
+    @FindBys({
+            @FindBy(xpath = "//div[contains(@class,'n-form-item') and .//span[text()='Run Type']]"),
+            @FindBy(className = "n-select"),
+            @FindBy(className = "n-base-selection")
+
+    })
+    private WebElement selectRunType;
 
     public JavaTaskForm(WorkflowForm parent) {
         super(parent);
@@ -56,8 +69,8 @@ public class JavaTaskForm extends TaskNodeForm {
         PageFactory.initElements(driver, this);
     }
 
-    public TaskNodeForm selectResource(String resourceName) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+    public JavaTaskForm selectJavaResource(String resourceName) {
+        WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(driver());
         wait.until(ExpectedConditions.elementToBeClickable(selectResource));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true); arguments[0].click();",
                 selectResource);
@@ -84,7 +97,7 @@ public class JavaTaskForm extends TaskNodeForm {
     }
 
     public JavaTaskForm selectRunType(String runType) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60)); // 增加等待时间
+        WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(driver());
 
         WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(selectRunType));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true); arguments[0].click();",
@@ -107,7 +120,7 @@ public class JavaTaskForm extends TaskNodeForm {
 
         final By optionsLocator = By.className("n-tree-node-content__text");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(driver());
         wait.until(ExpectedConditions.visibilityOfElementLocated(optionsLocator));
 
         List<WebElement> elements = driver.findElements(optionsLocator);
