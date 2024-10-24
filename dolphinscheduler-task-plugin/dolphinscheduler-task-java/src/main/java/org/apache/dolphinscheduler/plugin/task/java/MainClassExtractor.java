@@ -21,12 +21,10 @@ import java.io.File;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MainClassExtractor {
-
-    private static final Logger logger = LoggerFactory.getLogger(MainClassExtractor.class);
 
     private MainClassExtractor() {
     }
@@ -38,7 +36,7 @@ public class MainClassExtractor {
             mainClassName = manifest.getMainAttributes().getValue("Main-Class");
 
         } catch (Exception e) {
-            logger.error("get mainJarName failed:", e);
+            log.error("get mainJarName failed:", e);
         }
         return mainClassName;
     }
