@@ -77,7 +77,8 @@ public class WorkflowJavaTaskE2ETest {
 
     private static final String environmentWorkerGroup = "default";
 
-    private static final String filePath = System.getProperty("user.dir") + "/src/test/resources";
+    private static final String filePath =
+            "/opt/dolphinscheduler/dolphinscheduler-e2e/dolphinscheduler-e2e-case/src/test/resources";
 
     private static RemoteWebDriver browser;
 
