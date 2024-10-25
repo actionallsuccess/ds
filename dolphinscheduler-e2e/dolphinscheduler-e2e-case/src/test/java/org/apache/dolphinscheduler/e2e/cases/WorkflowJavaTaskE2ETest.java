@@ -49,7 +49,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-@DolphinScheduler(composeFiles = "docker/basic/docker-compose.yaml")
+@DolphinScheduler(composeFiles = "docker/java-task/docker-compose.yaml")
 @DisableIfTestFails
 public class WorkflowJavaTaskE2ETest {
 
@@ -76,9 +76,6 @@ public class WorkflowJavaTaskE2ETest {
     private static final String environmentDesc = "JAVA_HOME_DESC";
 
     private static final String environmentWorkerGroup = "default";
-
-    private static final String filePath =
-            "/opt/dolphinscheduler/dolphinscheduler-e2e/dolphinscheduler-e2e-case/src/test/resources";
 
     private static RemoteWebDriver browser;
 
@@ -134,7 +131,7 @@ public class WorkflowJavaTaskE2ETest {
         FileManagePage file = new NavBarPage(browser)
                 .goToNav(ResourcePage.class)
                 .goToTab(FileManagePage.class)
-                .uploadFile(filePath + "/fat.jar");
+                .uploadFile("/fat.jar");
 
         WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(browser);
 
@@ -208,13 +205,13 @@ public class WorkflowJavaTaskE2ETest {
         FileManagePage file = new NavBarPage(browser)
                 .goToNav(ResourcePage.class)
                 .goToTab(FileManagePage.class)
-                .uploadFile(filePath + "/normal2.jar");
+                .uploadFile("/normal2.jar");
 
         WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(browser);
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='normal2.jar']")));
 
-        file.uploadFile(filePath + "/normal1.jar");
+        file.uploadFile("/normal1.jar");
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='normal1.jar']")));
 
