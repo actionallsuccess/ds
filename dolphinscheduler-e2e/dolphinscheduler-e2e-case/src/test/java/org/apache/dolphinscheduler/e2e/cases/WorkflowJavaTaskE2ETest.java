@@ -49,7 +49,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-@DolphinScheduler(composeFiles = "docker/java-task/docker-compose.yaml")
+@DolphinScheduler(composeFiles = "docker/basic/docker-compose.yaml")
 @DisableIfTestFails
 public class WorkflowJavaTaskE2ETest {
 
