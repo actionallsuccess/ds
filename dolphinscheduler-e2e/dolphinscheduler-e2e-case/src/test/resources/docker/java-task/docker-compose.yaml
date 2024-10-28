@@ -32,6 +32,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 120
+    volumes:
+      - /home/runner/work/dolphinscheduler/dolphinscheduler/dolphinscheduler-e2e/dolphinscheduler-e2e-case/src/test/resources/fat.jar:/opt/fat.jar
+      - /home/runner/work/dolphinscheduler/dolphinscheduler/dolphinscheduler-e2e/dolphinscheduler-e2e-case/src/test/resources/normal1.jar:/opt/normal1.jar
+      - /home/runner/work/dolphinscheduler/dolphinscheduler/dolphinscheduler-e2e/dolphinscheduler-e2e-case/src/test/resources/normal2.jar:/opt/normal2.jar
 
 networks:
   e2e:

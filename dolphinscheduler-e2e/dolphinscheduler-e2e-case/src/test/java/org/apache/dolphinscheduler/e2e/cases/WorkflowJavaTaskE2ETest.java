@@ -77,6 +77,8 @@ public class WorkflowJavaTaskE2ETest {
 
     private static final String environmentWorkerGroup = "default";
 
+    private static final String filePath = "/opt";
+
     private static RemoteWebDriver browser;
 
     @BeforeAll
@@ -131,7 +133,7 @@ public class WorkflowJavaTaskE2ETest {
         FileManagePage file = new NavBarPage(browser)
                 .goToNav(ResourcePage.class)
                 .goToTab(FileManagePage.class)
-                .uploadFile("/fat.jar");
+                .uploadFile(filePath + "/fat.jar");
 
         WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(browser);
 
@@ -205,13 +207,13 @@ public class WorkflowJavaTaskE2ETest {
         FileManagePage file = new NavBarPage(browser)
                 .goToNav(ResourcePage.class)
                 .goToTab(FileManagePage.class)
-                .uploadFile("/normal2.jar");
+                .uploadFile(filePath + "/normal2.jar");
 
         WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(browser);
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='normal2.jar']")));
 
-        file.uploadFile("/normal1.jar");
+        file.uploadFile(filePath + "/normal1.jar");
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='normal1.jar']")));
 
