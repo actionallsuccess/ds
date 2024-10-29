@@ -29,6 +29,7 @@ import org.apache.dolphinscheduler.e2e.pages.project.workflow.WorkflowDefinition
 import org.apache.dolphinscheduler.e2e.pages.project.workflow.WorkflowForm;
 import org.apache.dolphinscheduler.e2e.pages.project.workflow.WorkflowInstanceTab;
 import org.apache.dolphinscheduler.e2e.pages.project.workflow.task.JavaTaskForm;
+import org.apache.dolphinscheduler.e2e.pages.project.workflow.task.ShellTaskForm;
 import org.apache.dolphinscheduler.e2e.pages.resource.FileManagePage;
 import org.apache.dolphinscheduler.e2e.pages.resource.ResourcePage;
 import org.apache.dolphinscheduler.e2e.pages.security.EnvironmentPage;
@@ -36,7 +37,21 @@ import org.apache.dolphinscheduler.e2e.pages.security.SecurityPage;
 import org.apache.dolphinscheduler.e2e.pages.security.TenantPage;
 import org.apache.dolphinscheduler.e2e.pages.security.UserPage;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,6 +66,7 @@ import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 @DolphinScheduler(composeFiles = "docker/basic/docker-compose.yaml")
 @DisableIfTestFails
+@Slf4j
 public class WorkflowJavaTaskE2ETest {
 
     private static final String project = "test-workflow";
@@ -77,7 +93,7 @@ public class WorkflowJavaTaskE2ETest {
 
     private static final String environmentWorkerGroup = "default";
 
-    private static final String filePath = "/opt";
+    private static final String filePath = "/tmp";
 
     private static RemoteWebDriver browser;
 
@@ -105,6 +121,8 @@ public class WorkflowJavaTaskE2ETest {
         Awaitility.await().untilAsserted(() -> assertThat(projectPage.projectList())
                 .as("The project list should include newly created projects.")
                 .anyMatch(it -> it.getText().contains(project)));
+
+        getJar();
     }
 
     @AfterAll
@@ -125,6 +143,135 @@ public class WorkflowJavaTaskE2ETest {
                 .goToNav(SecurityPage.class)
                 .goToTab(TenantPage.class)
                 .delete(tenant);
+    }
+    private static void createJar(String classFile, String entryName, String mainPackage, String jarName) {
+
+        String classFilePath = "/tmp/common/" + classFile;
+
+        String jarFilePath = "/tmp/" + jarName;
+
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mainPackage);
+
+        try (
+                FileOutputStream fos = new FileOutputStream(jarFilePath);
+                JarOutputStream jos = new JarOutputStream(fos, manifest)) {
+            Path path = new File(classFilePath).toPath();
+            JarEntry entry = new JarEntry(entryName);
+            jos.putNextEntry(entry);
+            byte[] bytes = Files.readAllBytes(path);
+            jos.write(bytes, 0, bytes.length);
+            jos.closeEntry();
+        } catch (IOException e) {
+            log.error("create jar failed:", e);
+        }
+
+    }
+
+    private static void getJar() {
+        compileJavaFlow();
+        createJar("Fat.class",
+                "common/Fat.class",
+                "common.Fat",
+                "fat.jar");
+        createJar("Normal1.class",
+                "common/Normal1.class",
+                "common.Normal1",
+                "normal1.jar");
+        createJar("Normal2.class",
+                "common/Normal2.class",
+                "common.Normal2",
+                "normal2.jar");
+
+    }
+
+    private static String getJavaPath(String file) {
+        URL resource = WorkflowJavaTaskE2ETest.class.getClassLoader().getResource(file);
+        if (resource == null) {
+            throw new IllegalArgumentException("File not found!");
+        } else {
+            Path path = null;
+            try {
+                path = Paths.get(resource.toURI());
+            } catch (URISyntaxException e) {
+                log.error("URL syntax error:", e);
+            }
+            String filePath = path.toString();
+            return filePath;
+        }
+    }
+
+    private static void compileJavaFlow() {
+        FileManagePage file = new NavBarPage(browser)
+                .goToNav(ResourcePage.class)
+                .goToTab(FileManagePage.class)
+                .uploadFile(getJavaPath("common/Fat.java"));
+
+        WebDriverWait wait = WebDriverWaitFactory.createWebDriverWait(browser);
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='Fat.java']")));
+
+        file.uploadFile(getJavaPath("common/Normal1.java"));
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='Normal1.java']")));
+
+        file.uploadFile(getJavaPath("common/Normal2.java"));
+
+        ProjectPage projectPage = new NavBarPage(browser)
+                .goToNav(ProjectPage.class);
+
+        WorkflowDefinitionTab workflowDefinitionPage =
+                new ProjectPage(browser)
+                        .goToNav(ProjectPage.class)
+                        .goTo(project)
+                        .goToTab(WorkflowDefinitionTab.class);
+
+        String workflowName = "compile";
+        String taskName = "compile";
+        String context =
+                "\n" +
+                        "$JAVA_HOME/bin/javac -d /tmp Fat.java\n" +
+                        "\n" +
+                        "$JAVA_HOME/bin/javac -d /tmp Normal1.java Normal2.java \n" +
+                        "\n" +
+                        "$JAVA_HOME/bin/javac -d /tmp Normal2.java \n"; /*
+                                                                         * + "\n" + "ls \n" + "echo '%%%%%%%%%' \n" +
+                                                                         * "\n" + "ls /tmp \n" + "echo '%%%%%%%%%' \n" +
+                                                                         * "\n" + "ls /tmp/common \n";
+                                                                         */
+        workflowDefinitionPage
+                .createWorkflow()
+                .<ShellTaskForm>addTask(WorkflowForm.TaskType.SHELL)
+                .script(context)
+                .selectResource("Fat.java")
+                .selectResource("Normal1.java")
+                .selectResource("Normal2.java")
+                .name(taskName)
+                .submit()
+                .submit()
+                .name(workflowName)
+                .submit();
+
+        Awaitility.await().untilAsserted(() -> assertThat(workflowDefinitionPage.workflowList())
+                .as("Workflow list should contain newly-created workflow")
+                .anyMatch(it -> it.getText().contains(workflowName)));
+
+        workflowDefinitionPage.publish(workflowName);
+
+        final ProjectDetailPage projectDetailPage =
+                new ProjectPage(browser)
+                        .goToNav(ProjectPage.class)
+                        .goTo(project);
+
+        projectDetailPage
+                .goToTab(WorkflowInstanceTab.class)
+                .deleteAll();
+        projectDetailPage
+                .goToTab(WorkflowDefinitionTab.class)
+                .run(workflowName)
+                .submit();
+
     }
 
     @Test
@@ -152,8 +299,8 @@ public class WorkflowJavaTaskE2ETest {
         workflow1.<JavaTaskForm>addTask(WorkflowForm.TaskType.JAVA)
                 .selectRunType("FAT_JAR")
                 .selectMainPackage("fat.jar")
-                .selectJavaResource("fat.jar")
-                .selectJavaResource("fat.jar")
+                .selectResource("fat.jar")
+                .selectResource("fat.jar")
                 .name("test-1")
                 .selectEnv(environmentName)
                 .submit()
@@ -230,9 +377,9 @@ public class WorkflowJavaTaskE2ETest {
                 .<JavaTaskForm>addTask(WorkflowForm.TaskType.JAVA)
                 .selectRunType("NORMAL_JAR")
                 .selectMainPackage("normal1.jar")
-                .selectJavaResource("normal1.jar")
-                .selectJavaResource("normal1.jar")
-                .selectJavaResource("normal2.jar")
+                .selectResource("normal1.jar")
+                .selectResource("normal1.jar")
+                .selectResource("normal2.jar")
                 .name("test-2")
                 .selectEnv(environmentName)
                 .submit()
