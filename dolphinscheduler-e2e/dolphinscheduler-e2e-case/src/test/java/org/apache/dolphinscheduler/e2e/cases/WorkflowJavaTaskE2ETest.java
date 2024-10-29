@@ -146,7 +146,7 @@ public class WorkflowJavaTaskE2ETest {
     }
     private static void createJar(String classFile, String entryName, String mainPackage, String jarName) {
 
-        String classFilePath = "/tmp/common/" + classFile;
+        String classFilePath = "/tmp/" + classFile;
 
         String jarFilePath = "/tmp/" + jarName;
 
@@ -230,16 +230,11 @@ public class WorkflowJavaTaskE2ETest {
         String workflowName = "compile";
         String taskName = "compile";
         String context =
-                "\n" +
-                        "$JAVA_HOME/bin/javac -d /tmp Fat.java\n" +
-                        "\n" +
+                "$JAVA_HOME/bin/javac -d /tmp Fat.java \n" +
                         "$JAVA_HOME/bin/javac -d /tmp Normal1.java Normal2.java \n" +
-                        "\n" +
-                        "$JAVA_HOME/bin/javac -d /tmp Normal2.java \n"; /*
-                                                                         * + "\n" + "ls \n" + "echo '%%%%%%%%%' \n" +
-                                                                         * "\n" + "ls /tmp \n" + "echo '%%%%%%%%%' \n" +
-                                                                         * "\n" + "ls /tmp/common \n";
-                                                                         */
+                        "$JAVA_HOME/bin/javac -d /tmp Normal2.java \n"
+                        + "echo '####当前目录 ####'\n" + "ls\n"
+                        + "echo '#### /tmp/common 目录 ####'\n" + "ls /tmp/common\n";
         workflowDefinitionPage
                 .createWorkflow()
                 .<ShellTaskForm>addTask(WorkflowForm.TaskType.SHELL)
@@ -286,6 +281,8 @@ public class WorkflowJavaTaskE2ETest {
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='fat.jar']")));
 
+        file.delete("Fat.java").delete("Normal1.java").delete("Normal2.java");
+
         ProjectPage projectPage = new NavBarPage(browser)
                 .goToNav(ProjectPage.class);
 
@@ -299,8 +296,8 @@ public class WorkflowJavaTaskE2ETest {
         workflow1.<JavaTaskForm>addTask(WorkflowForm.TaskType.JAVA)
                 .selectRunType("FAT_JAR")
                 .selectMainPackage("fat.jar")
-                .selectResource("fat.jar")
-                .selectResource("fat.jar")
+                .selectJavaResource("fat.jar")
+                .selectJavaResource("fat.jar")
                 .name("test-1")
                 .selectEnv(environmentName)
                 .submit()
@@ -377,9 +374,9 @@ public class WorkflowJavaTaskE2ETest {
                 .<JavaTaskForm>addTask(WorkflowForm.TaskType.JAVA)
                 .selectRunType("NORMAL_JAR")
                 .selectMainPackage("normal1.jar")
-                .selectResource("normal1.jar")
-                .selectResource("normal1.jar")
-                .selectResource("normal2.jar")
+                .selectJavaResource("normal1.jar")
+                .selectJavaResource("normal1.jar")
+                .selectJavaResource("normal2.jar")
                 .name("test-2")
                 .selectEnv(environmentName)
                 .submit()
